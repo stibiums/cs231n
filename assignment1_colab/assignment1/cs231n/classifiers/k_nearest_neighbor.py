@@ -75,7 +75,9 @@ class KNearestNeighbor(object):
                 # training point, and store the result in dists[i, j]. You should   #
                 # not use a loop over dimension, nor use np.linalg.norm().          #
                 #####################################################################
-                pass
+                
+                dists[i, j] = np.sqrt(np.sum((X[i] - self.X_train[j]) ** 2))
+
         return dists
 
     def compute_distances_one_loop(self, X):
@@ -138,27 +140,13 @@ class KNearestNeighbor(object):
           test data, where y[i] is the predicted label for the test point X[i].
         """
         num_test = dists.shape[0]
-        y_pred = np.zeros(num_test)
+        y_pred = np.zeros(num_test, dtype=int)
         for i in range(num_test):
-            # A list of length k storing the labels of the k nearest neighbors to
-            # the ith test point.
-            closest_y = []
-            #########################################################################
-            # TODO:                                                                 #
-            # Use the distance matrix to find the k nearest neighbors of the ith    #
-            # testing point, and use self.y_train to find the labels of these       #
-            # neighbors. Store these labels in closest_y.                           #
-            # Hint: Look up the function numpy.argsort.                             #
-            #########################################################################
-
-
-            #########################################################################
-            # TODO:                                                                 #
-            # Now that you have found the labels of the k nearest neighbors, you    #
-            # need to find the most common label in the list closest_y of labels.   #
-            # Store this label in y_pred[i]. Break ties by choosing the smaller     #
-            # label.                                                                #
-            #########################################################################
-
-
+            # 找到 k 个最近邻的索引
+            closest_indices = np.argsort(dists[i])[:k]
+            # 拿到它们的标签
+            closest_y = self.y_train[closest_indices]
+            # 用 bincount 自动统计并在并列时取最小标签
+            cnts = np.bincount(closest_y.astype(int))
+            y_pred[i] = np.argmax(cnts)
         return y_pred
